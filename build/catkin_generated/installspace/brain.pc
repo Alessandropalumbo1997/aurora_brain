@@ -1,0 +1,8 @@
+prefix=/usr/local
+
+Name: brain
+Description: Description of brain
+Version: 0.0.0
+Cflags: -I${prefix}/include
+Libs: -L${prefix}/lib -lbrain
+Requires: rospy std_msgs message_runtime

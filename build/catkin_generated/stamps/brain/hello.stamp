@@ -1,0 +1,7 @@
+#! /usr/bin/env python
+
+import hormone.hello
+
+
+if __name__ == '__main__':
+    hormone.hello.say('my friend!')

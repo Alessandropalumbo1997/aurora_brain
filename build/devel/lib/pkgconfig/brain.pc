@@ -1,0 +1,8 @@
+prefix=/home/masta-p/aurora_test_ws/src/brain/build/devel
+
+Name: brain
+Description: Description of brain
+Version: 0.0.0
+Cflags: -I/home/masta-p/aurora_test_ws/src/brain/build/devel/include
+Libs: -L${prefix}/lib -lbrain
+Requires: rospy std_msgs message_runtime

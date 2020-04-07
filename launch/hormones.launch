@@ -1,0 +1,11 @@
+<launch>
+
+    <node pkg="brain" name="oxytocine_node" type="oxytocine"/>
+
+    <node pkg="brain" name="epinephrine_node" type="epinephrine"/>
+
+    <node pkg="brain" name="dopamine_node" type="dopamine"/>
+
+    <node pkg="brain" name="cortisol_node" type="cortisol"/>
+
+</launch>

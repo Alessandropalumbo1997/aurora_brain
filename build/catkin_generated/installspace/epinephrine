@@ -1,0 +1,10 @@
+#! /usr/bin/env python
+
+import roslib
+import rospy
+# from std_msgs.msg import String
+from hormone.hormone import Hormone
+
+if __name__ == '__main__':
+    epi = Hormone('epinephrine', 0)
+    epi.hormonize()
