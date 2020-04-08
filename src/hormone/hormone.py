@@ -20,10 +20,10 @@ class Hormone:
         # rate = rospy.Rate(0.5) # 5hz
         s = rospy.Service('{}/set_hormone_srv'.format(self.name), SetHormone, self.set_values)
         while not rospy.is_shutdown():
-            # if self.value != self.old_value:    
+            # if self.value != self.old_value:
             # rate.sleep()
             rospy.spin()
-        
+
 
     def set_values(self, req):
         if self.name == req.name:
