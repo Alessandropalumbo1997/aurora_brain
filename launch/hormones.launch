@@ -1,6 +1,6 @@
 <launch>
 
-    <node pkg="brain" name="oxytocine_node" type="oxytocine"/>
+    <node pkg="brain" name="oxytocin_node" type="oxytocin"/>
 
     <node pkg="brain" name="epinephrine_node" type="epinephrine"/>
 

@@ -6,5 +6,5 @@ import rospy
 from hormone.hormone import Hormone
 
 if __name__ == '__main__':
-    oxy = Hormone('oxytocine', 0)
+    oxy = Hormone('oxytocin', 0)
     oxy.hormonize()

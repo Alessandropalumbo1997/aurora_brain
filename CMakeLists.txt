@@ -97,7 +97,7 @@ catkin_package(
   DEPENDS system_lib
 )
 
-catkin_install_python(PROGRAMS bin/oxytocine bin/epinephrine bin/dopamine bin/cortisol
+catkin_install_python(PROGRAMS bin/oxytocin bin/epinephrine bin/dopamine bin/cortisol
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
 ###########

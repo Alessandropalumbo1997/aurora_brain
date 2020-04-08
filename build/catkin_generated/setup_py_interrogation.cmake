@@ -1,5 +1,5 @@
 set(brain_SETUP_PY_VERSION "0.0.0")
-set(brain_SETUP_PY_SCRIPTS "bin/dopamine;bin/cortisol;bin/epinephrine;bin/oxytocine;bin/receptor")
+set(brain_SETUP_PY_SCRIPTS "bin/dopamine;bin/cortisol;bin/epinephrine;bin/oxytocin;bin/receptor")
 set(brain_SETUP_PY_PACKAGES "brain")
 set(brain_SETUP_PY_PACKAGE_DIRS "src/brain")
 set(brain_SETUP_PY_MODULES "")

@@ -192,7 +192,7 @@ if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/brain" TYPE PROGRAM FILES "/home/masta-p/aurora_test_ws/src/brain/build/catkin_generated/installspace/oxytocine")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/brain" TYPE PROGRAM FILES "/home/masta-p/aurora_test_ws/src/brain/build/catkin_generated/installspace/oxytocin")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
