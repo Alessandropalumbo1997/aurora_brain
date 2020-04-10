@@ -43,7 +43,7 @@ add_message_files(
 
 ## Generate services in the 'srv' folder
 add_service_files(
-  FILES 
+  FILES
   # AddTwoInts.srv
   SetHormone.srv
 )
@@ -97,7 +97,7 @@ catkin_package(
   DEPENDS system_lib
 )
 
-catkin_install_python(PROGRAMS bin/oxytocine bin/epinephrine bin/dopamine bin/cortisol
+catkin_install_python(PROGRAMS bin/oxytocin bin/epinephrine bin/dopamine bin/cortisol bin/hormone_receptor bin/hcsr04_receptor
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
 ###########
