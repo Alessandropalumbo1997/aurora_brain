@@ -14,7 +14,6 @@ class Hormone:
         self.pub = rospy.Publisher('hormones', hormone_msg, queue_size=10)
         self.msg = hormone_msg()
 
-
     def hormonize(self):
         rospy.init_node("{}_node".format(self.name), anonymous=True)
         # rate = rospy.Rate(0.5) # 5hz
@@ -23,7 +22,6 @@ class Hormone:
             # if self.value != self.old_value:
             # rate.sleep()
             rospy.spin()
-
 
     def set_values(self, req):
         if self.name == req.name:
