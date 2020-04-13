@@ -30,7 +30,7 @@ The 4 hormones, epinephrine, dopamine, oxytocine and cortisol, inherit from Horm
 
 `rosrun brain set_hormone_client.py <hormone_name> <value>`
 
-4. You can check the situation by runnung:
+4. You can check the situation by running:
 
 `rosrun rqt_graph rqt_graph`
 
@@ -50,6 +50,20 @@ http://wiki.ros.org/rosserial_arduino/Tutorials/Arduino%20IDE%20Setup
 4. run the receptor
 
 `rosrun brain hcsr04_receptor`
+
+
+
+### Auditory cortex
+
+1. clone the auditory cortex repo:
+
+https://github.com/leonardopaglia/aurora_auditory_cortex
+
+2. launch the auditory cortex (command specified in its readme)
+
+3. run the receptor
+
+`rosrun brain auditory_cortex_receptor`
 
 ---
 
