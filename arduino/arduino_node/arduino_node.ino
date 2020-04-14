@@ -1,17 +1,25 @@
+// RIGHE DA SCOMMENTARE:
+// - La riga di inclusione di hcsr04_msg qua sotto
+// - Le due righe sotto "ros::NodeHandle nh;"
+// - Nel metodo void setup() la seguente riga "nh.advertise(hcsr04_pub);"
+// - Nel metodo float hcsr04() le 4 righe sopra "nh.spinOnce();"
+// PORCODIO
+
+
 #include <ros.h>
-#include <std_msgs/Float64.h>
+// #include <brain/hcsr04_msg.h>
 #include <brain/hormone_msg.h>
 #include <Stepper.h>
 
 ros::NodeHandle nh;
-std_msgs::Float64 Distance;
-ros::Publisher hcsr04_pub("hcsr04", &Distance);
+//brain::hcsr04_msg Msg;
+//ros::Publisher hcsr04_pub("hcsr04", &Msg);
 
-String name;
+String hormone_name;
 
 void hormoneCb(const brain::hormone_msg &msg) {
-  name = msg.name;
-  if (name == "dopamine") {
+  hormone_name = msg.name;
+  if (hormone_name == "dopamine") {
     digitalWrite(LED_BUILTIN, HIGH);
     delay(100);
     digitalWrite(LED_BUILTIN, LOW);
@@ -37,7 +45,7 @@ const int echoPin = 9;
 // defines variables
 long duration;
 float distance;
-int motorSpeed = 2;
+int motorDelay = 500;
 const int sPR = 200; // Steps per revolution
 
 // defines motor object with the four IN pins
@@ -46,7 +54,7 @@ Stepper motor = Stepper(sPR, m1, m2, m3, m4);
 void setup() {
   // initialize ROS stuff
   nh.initNode();
-  nh.advertise(hcsr04_pub);
+  // nh.advertise(hcsr04_pub);
   nh.subscribe(hormone_sub);
 
   // set pin modes
@@ -82,10 +90,11 @@ float hcsr04() {
   distance = duration * 0.034 / 2;
 
   //publishing data
-  Distance.data = distance;
-  hcsr04_pub.publish(&Distance);
+  // Msg.name = "lateral_left";
+  // Msg.distance = distance;
+  // Msg.approaching_speed = 0;
+  // hcsr04_pub.publish(&Distance);
   nh.spinOnce();
-  // Serial.println(distance);
   delay(100);
   return distance;
 }
@@ -93,6 +102,6 @@ float hcsr04() {
 float motorControl(float dist) {
   if (dist <= 15) {
     motor.step(sPR);
-    // delay(500);
+    delay(motorDelay);
   }
 }
