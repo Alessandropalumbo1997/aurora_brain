@@ -35,7 +35,7 @@ The 4 hormones, epinephrine, dopamine, oxytocine and cortisol, inherit from Horm
 `rosrun rqt_graph rqt_graph`
 
 
-### HC-SR04 ultrasonic sensor
+### Visual association cortex (HC-SR04 ultrasonic sensors + camera + lasers)
 
 1. set up your arduino IDE and install rosserial from here:
 
@@ -47,9 +47,17 @@ http://wiki.ros.org/rosserial_arduino/Tutorials/Arduino%20IDE%20Setup
 
 `rosrun rosserial_python serial_node.py /dev/ttyUSB0`
 
-4. run the receptor
+4. launch the camera
 
-`rosrun brain hcsr04_receptor`
+`roslaunch usb_cam usb_cam-test.launch`
+
+5. launch the object recognition package
+
+`roslaunch cob_people_object_detection_tensorflow alltogether.launch`
+
+6. run the association cortex
+
+`rosrun brain visual_association_cortex`
 
 
 
