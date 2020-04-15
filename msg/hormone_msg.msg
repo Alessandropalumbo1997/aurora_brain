@@ -1,2 +1,2 @@
 string name
-int32 value
+uint8 value

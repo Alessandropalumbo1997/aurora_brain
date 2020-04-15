@@ -3,9 +3,8 @@ import rospy
 import time
 from std_msgs.msg import String
 from std_msgs.msg import Float64
-from brain.msg import visual_association_cortex_msg
+from brain.msg import visual_association_cortex_msg, hcsr04_msg
 from cob_perception_msgs.msg import Detection, DetectionArray, Rect
-from brain.msg import hcsr04_msg
 
 class Hcsr04:
     distance = 0
@@ -22,30 +21,53 @@ class Hcsr04:
     def calculate_approaching_speed(new_distance):
         current_time = time.time()
         self.approaching_speed = (distance - new_distance) / (current_time - distance_timestamp)
-        self.distance = int(new_distance)
+        self.distance = new_distance
         self.distance_timestamp = current_time
 
 
-class Camera:
+class ObjectDetection:
 
     # Confidence in percentage
-    score = 0;
-    label = "";
+    score = 0
+    label = ""
+    timestamp = 0
 
-    def update(label, score):
+    def __init__(self, label, score, timestamp):
+        self.score = score
+        self.label = label
+        self.timestamp = timestamp
+
+    def update(self, label, score, timestamp):
+        self.timestamp = timestamp
         self.score = score
         self.label = label
 
 
-# TODO: send objects seen in the last 3 seconds
 def callback_camera(data):
-    for index, detection in enumerate(data.detections):
-        camera.update(detection.label, int(detection.score*100)))
 
-        rospy.loginfo(rospy.get_caller_id() +
-         '\n Index: {}'.format(index) +
-         '\n Label: {}'.format(detection.label) +
-         '\n Score: {}'.format(int(detection.score*100)) + '%')
+    current_time = time.time()
+    found = False
+
+    # Here we update the object_detections array, there are 3 cases:
+    # 1. the detection is older than 3 seconds -> we remove it to send only detections of the last 3 seconds
+    # 2. the detection is already present in object_detections, we update its timestamp
+    # 3. the detection is new, we append it to object_detections
+    for index, detection in enumerate(data.detections):
+
+        for item in object_detections:
+            found = False
+
+            if time.time() - item.timestamp >= 3:
+                object_detections.remove(item)
+
+            if detection.label == item.label:
+                found = True
+                item.update(detection.label, int(detection.score*100), current_time)
+
+        if not found:
+            object_detections.append(ObjectDetection(detection.label, detection.score, current_time))
+
+    pub.publish(msg)
 
 
 def callback_hcsr04(data):
@@ -55,7 +77,7 @@ def callback_hcsr04(data):
         if data.name == hcsr04_sensor.name:
             hcsr04_sensor.calculate_approaching_speed(data.distance)
 
-    rospy.loginfo(rospy.get_caller_id() + '\n H: {}'.format(data.data))
+    pub.publish(msg)
 
 
 def listener():
@@ -63,14 +85,12 @@ def listener():
     rospy.Subscriber('hcsr04', hcsr04_msg, callback_hcsr04)
     rospy.Subscriber('object_detection/detections', DetectionArray, callback_camera)
 
-    # spin() simply keeps python from exiting until this node is stopped
     rospy.spin()
-
-def publisher():
-    rospy.Publisher('visual_association_cortex', visual_association_cortex, queue_size=10)
 
 
 if __name__ == '__main__':
+
+    pub = rospy.Publisher('visual_association_cortex', visual_association_cortex_msg, queue_size=10)
 
     hcsr04_sensors = [
                         Hcsr04('lateral_left'),
@@ -82,5 +102,11 @@ if __name__ == '__main__':
                         Hcsr04('bottom_left'),
                         Hcsr04('bottom_right')
                     ]
+
+    object_detections = []
+
+    msg = visual_association_cortex_msg()
+    msg.hcsr04_sensors = hcsr04_sensors
+    msg.object_detections = object_detections
 
     listener()

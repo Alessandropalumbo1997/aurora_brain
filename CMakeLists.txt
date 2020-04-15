@@ -39,7 +39,9 @@ catkin_python_setup()
 add_message_files(
   FILES
   hormone_msg.msg
-	hcsr04_msg.msg
+  object_detection_msg.msg
+  hcsr04_msg.msg
+  visual_association_cortex_msg.msg
 )
 
 ## Generate services in the 'srv' folder
@@ -98,7 +100,7 @@ catkin_package(
   DEPENDS system_lib
 )
 
-catkin_install_python(PROGRAMS
+catkin_install_python(PROGRAMS bin/oxytocin bin/epinephrine bin/dopamine bin/cortisol bin/hormone_receptor bin/auditory_association_cortex bin/visual_association_cortex bin/amygdala
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
 ###########

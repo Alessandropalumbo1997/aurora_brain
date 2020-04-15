@@ -62,9 +62,9 @@ void setup() {
   pinMode(trigPin, OUTPUT); // Sets the trigPin as an Output
   pinMode(LED_BUILTIN, OUTPUT);
 
-  
+
   motor.setSpeed(50);
-  
+
   Serial.begin(57600); // Starts the serial communication
 }
 

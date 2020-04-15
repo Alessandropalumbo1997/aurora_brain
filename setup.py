@@ -7,6 +7,7 @@ from catkin_pkg.python_setup import generate_distutils_setup
 setup_args = generate_distutils_setup(
     packages=['hormone'],
     package_dir={'': 'src'},
+    scripts=['bin/dopamine', 'bin/cortisol', 'bin/epinephrine', 'bin/oxytocin', 'bin/hormone_receptor', 'bin/auditory_association_cortex', 'bin/visual_association_cortex', 'bin/amygdala']
 )
 
 setup(**setup_args)

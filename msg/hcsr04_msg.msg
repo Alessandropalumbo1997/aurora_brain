@@ -1,3 +1,3 @@
 string name
-int32 distance
-int32 approaching_speed
+uint16 distance
+int16 approaching_speed
