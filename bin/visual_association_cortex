@@ -5,6 +5,7 @@ from std_msgs.msg import String
 from std_msgs.msg import Float64
 from brain.msg import visual_association_cortex_msg
 from cob_perception_msgs.msg import Detection, DetectionArray, Rect
+from brain.msg import hcsr04_msg
 
 class Hcsr04:
     distance = 0
@@ -51,15 +52,15 @@ def callback_hcsr04(data):
 
     # Updating Hcsr04 instances data
     for hcsr04_sensor in hcsr04_sensors:
-        if data.data.name == hcsr04_sensor.name:
-            hcsr04_sensor.calculate_approaching_speed(data.data.distance)
+        if data.name == hcsr04_sensor.name:
+            hcsr04_sensor.calculate_approaching_speed(data.distance)
 
     rospy.loginfo(rospy.get_caller_id() + '\n H: {}'.format(data.data))
 
 
 def listener():
     rospy.init_node('visual_association_cortex', anonymous=True)
-    rospy.Subscriber('hcsr04', Float64, callback_hcsr04)
+    rospy.Subscriber('hcsr04', hcsr04_msg, callback_hcsr04)
     rospy.Subscriber('object_detection/detections', DetectionArray, callback_camera)
 
     # spin() simply keeps python from exiting until this node is stopped
