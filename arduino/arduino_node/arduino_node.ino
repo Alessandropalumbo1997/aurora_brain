@@ -1,19 +1,11 @@
-// RIGHE DA SCOMMENTARE:
-// - La riga di inclusione di hcsr04_msg qua sotto
-// - Le due righe sotto "ros::NodeHandle nh;"
-// - Nel metodo void setup() la seguente riga "nh.advertise(hcsr04_pub);"
-// - Nel metodo float hcsr04() le 4 righe sopra "nh.spinOnce();"
-// PORCODIO
-
-
 #include <ros.h>
-// #include <brain/hcsr04_msg.h>
+#include <brain/hcsr04_msg.h>
 #include <brain/hormone_msg.h>
 #include <Stepper.h>
 
 ros::NodeHandle nh;
-//brain::hcsr04_msg Msg;
-//ros::Publisher hcsr04_pub("hcsr04", &Msg);
+brain::hcsr04_msg Msg;
+ros::Publisher hcsr04_pub("hcsr04", &Msg);
 
 String hormone_name;
 
@@ -54,7 +46,7 @@ Stepper motor = Stepper(sPR, m1, m2, m3, m4);
 void setup() {
   // initialize ROS stuff
   nh.initNode();
-  // nh.advertise(hcsr04_pub);
+  nh.advertise(hcsr04_pub);
   nh.subscribe(hormone_sub);
 
   // set pin modes
@@ -90,10 +82,10 @@ float hcsr04() {
   distance = duration * 0.034 / 2;
 
   //publishing data
-  // Msg.name = "lateral_left";
-  // Msg.distance = distance;
-  // Msg.approaching_speed = 0;
-  // hcsr04_pub.publish(&Distance);
+  Msg.name = "lateral_left";
+  Msg.distance = distance;
+  Msg.approaching_speed = 0;
+  hcsr04_pub.publish(&Msg);
   nh.spinOnce();
   delay(100);
   return distance;
