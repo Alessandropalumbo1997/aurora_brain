@@ -1,11 +1,23 @@
 #!/usr/bin/env python
 import rospy
+import time
 from std_msgs.msg import String
 from std_msgs.msg import Float64
 from brain.msg import visual_association_cortex_msg
+from brain.msg import hormone_msg
+from brain.srv import SetHormone, SetHormoneResponse
 
 def callback(data):
     rospy.loginfo(rospy.get_caller_id() + '\n H: {}'.format(data))
+
+    check_approaching_objects()
+
+
+def check_approaching_objects():
+    for item in data.object_detections:
+        if item.approaching_speed > 50:
+            engage_fight_or_flight()
+            return
 
 def listener():
     rospy.init_node('amygdala', anonymous=True)
@@ -14,5 +26,14 @@ def listener():
     # spin() simply keeps python from exiting until this node is stopped
     rospy.spin()
 
+def engage_fight_or_flight():
+    # publish epinephrine = 100
+    # wait a few seconds
+    # publish epinephrine = 0
+
+
 if __name__ == '__main__':
+
+    pub = rospy.Publisher('visual_association_cortex', visual_association_cortex_msg, queue_size=10)
+
     listener()

@@ -27,19 +27,18 @@ class Hcsr04:
 
 class ObjectDetection:
 
-    # Confidence in percentage
-    score = 0
+    confidence = 0
     label = ""
     timestamp = 0
 
-    def __init__(self, label, score, timestamp):
-        self.score = score
+    def __init__(self, label, confidence, timestamp):
+        self.confidence = confidence
         self.label = label
         self.timestamp = timestamp
 
-    def update(self, label, score, timestamp):
+    def update(self, label, confidence, timestamp):
         self.timestamp = timestamp
-        self.score = score
+        self.confidence = confidence
         self.label = label
 
 
@@ -53,11 +52,12 @@ def callback_camera(data):
     # 2. the detection is already present in object_detections, we update its timestamp
     # 3. the detection is new, we append it to object_detections
     for index, detection in enumerate(data.detections):
+        found = False
 
         for item in object_detections:
-            found = False
 
             if time.time() - item.timestamp >= 3:
+                found = True
                 object_detections.remove(item)
 
             if detection.label == item.label:

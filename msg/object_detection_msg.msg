@@ -1,2 +1,2 @@
 string label
-uint8 score
+uint8 confidence
