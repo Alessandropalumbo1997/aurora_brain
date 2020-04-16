@@ -32,12 +32,12 @@ ros::Publisher hcsr04_pub("hcsr04", &Msg);
 
 
 // defines pins numbers
-const int m1 = 2;
-const int m2 = 3;
-const int m3 = 4;
-const int m4 = 5;
-const int trigPin = 8;
 const int echoPin = 9;
+const int trigPin = 8;
+const int m1 = 7;
+const int m2 = 6;
+const int m3 = 5;
+const int m4 = 4;
 
 // defines variables
 long duration;
