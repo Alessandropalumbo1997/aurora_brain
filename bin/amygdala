@@ -7,33 +7,42 @@ from brain.msg import visual_association_cortex_msg
 from brain.msg import hormone_msg
 from brain.srv import SetHormone, SetHormoneResponse
 
-def callback(data):
+def callback_visual_association_cortex(data):
     rospy.loginfo(rospy.get_caller_id() + '\n {}'.format(data))
 
     check_approaching_objects(data)
 
 
+def callback_hormones(data):
+    rospy.loginfo(rospy.get_caller_id() + '\n {}'.format(data))
+    hormones = data
+    check_approaching_objects(data)
+
+
 def check_approaching_objects(data):
     for item in data.hcsr04_sensors:
-        if item.approaching_speed > 50:
-            # engage_fight_or_flight()
+        if item.approaching_speed > 30:
+            engage_fight_or_flight()
             return
 
 def listener():
     rospy.init_node('amygdala', anonymous=True)
-    rospy.Subscriber('visual_association_cortex', visual_association_cortex_msg, callback)
+    rospy.Subscriber('visual_association_cortex', visual_association_cortex_msg, callback_visual_association_cortex)
+    rospy.Subscriber('hormones', hormone_msg, callback_hormones)
 
     # spin() simply keeps python from exiting until this node is stopped
     rospy.spin()
 
-# def engage_fight_or_flight():
-    # publish epinephrine = 100
-    # wait a few seconds
-    # publish epinephrine = 0
+def engage_fight_or_flight():
+    pub.publish("epinephrine", 50)
+
+    # waiting a few seconds for the epinephrine to be virtually reabsorbed
+    time.sleep(3)
+
+    pub.publish("epinephrine", 0)
 
 
 if __name__ == '__main__':
 
-    pub = rospy.Publisher('visual_association_cortex', visual_association_cortex_msg, queue_size=10)
-
+    pub = rospy.Publisher('hormones', hormone_msg, queue_size=10)
     listener()
