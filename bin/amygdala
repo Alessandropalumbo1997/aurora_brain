@@ -8,15 +8,15 @@ from brain.msg import hormone_msg
 from brain.srv import SetHormone, SetHormoneResponse
 
 def callback(data):
-    rospy.loginfo(rospy.get_caller_id() + '\n H: {}'.format(data))
+    rospy.loginfo(rospy.get_caller_id() + '\n {}'.format(data))
 
-    check_approaching_objects()
+    check_approaching_objects(data)
 
 
-def check_approaching_objects():
-    for item in data.object_detections:
+def check_approaching_objects(data):
+    for item in data.hcsr04_sensors:
         if item.approaching_speed > 50:
-            engage_fight_or_flight()
+            # engage_fight_or_flight()
             return
 
 def listener():
@@ -26,7 +26,7 @@ def listener():
     # spin() simply keeps python from exiting until this node is stopped
     rospy.spin()
 
-def engage_fight_or_flight():
+# def engage_fight_or_flight():
     # publish epinephrine = 100
     # wait a few seconds
     # publish epinephrine = 0

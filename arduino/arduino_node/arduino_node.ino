@@ -7,24 +7,29 @@ ros::NodeHandle nh;
 brain::hcsr04_msg Msg;
 ros::Publisher hcsr04_pub("hcsr04", &Msg);
 
-String hormone_name;
+//==== ESEMPIO SUBSCRIBER E CALLBACK ====
+      //
+      //String hormone_name;
+      //
+      //void hormoneCb(const brain::hormone_msg &msg) {
+      //  hormone_name = msg.name;
+      //  if (hormone_name == "dopamine") {
+      //    digitalWrite(LED_BUILTIN, HIGH);
+      //    delay(100);
+      //    digitalWrite(LED_BUILTIN, LOW);
+      //    delay(100);
+      //  } else {
+      //    digitalWrite(LED_BUILTIN, HIGH);
+      //    delay(1000);
+      //    digitalWrite(LED_BUILTIN, LOW);
+      //    delay(1000);
+      //  }
+      //}
+      //
+      //ros::Subscriber<brain::hormone_msg> hormone_sub("hormones", &hormoneCb);
+      //
+//=======================================
 
-void hormoneCb(const brain::hormone_msg &msg) {
-  hormone_name = msg.name;
-  if (hormone_name == "dopamine") {
-    digitalWrite(LED_BUILTIN, HIGH);
-    delay(100);
-    digitalWrite(LED_BUILTIN, LOW);
-    delay(100);
-  } else {
-    digitalWrite(LED_BUILTIN, HIGH);
-    delay(1000);
-    digitalWrite(LED_BUILTIN, LOW);
-    delay(1000);
-  }
-}
-
-ros::Subscriber<brain::hormone_msg> hormone_sub("hormones", &hormoneCb);
 
 // defines pins numbers
 const int m1 = 2;
@@ -38,7 +43,7 @@ const int echoPin = 9;
 long duration;
 float distance;
 int motorDelay = 500;
-const int sPR = 200; // Steps per revolution
+const int sPR = 200; // Steps Per Revolution
 
 // defines motor object with the four IN pins
 Stepper motor = Stepper(sPR, m1, m2, m3, m4);
@@ -47,7 +52,7 @@ void setup() {
   // initialize ROS stuff
   nh.initNode();
   nh.advertise(hcsr04_pub);
-  nh.subscribe(hormone_sub);
+  // nh.subscribe(hormone_sub);
 
   // set pin modes
   pinMode(echoPin, INPUT); // Sets the echoPin as an Input
@@ -61,11 +66,11 @@ void setup() {
 }
 
 void loop() {
-  distance = hcsr04();
-  motorControl(distance);
+  hcsr04();
+  motorControl();
 }
 
-float hcsr04() {
+void hcsr04() {
   // Clears the trigPin
   digitalWrite(trigPin, LOW);
   delayMicroseconds(2);
@@ -80,19 +85,19 @@ float hcsr04() {
 
   // Calculating the distance
   distance = duration * 0.034 / 2;
+  
 
   //publishing data
   Msg.name = "lateral_left";
-  Msg.distance = distance;
+  Msg.distance = (int) distance;
   Msg.approaching_speed = 0;
   hcsr04_pub.publish(&Msg);
   nh.spinOnce();
   delay(100);
-  return distance;
 }
 
-float motorControl(float dist) {
-  if (dist <= 15) {
+void motorControl() {
+  if (distance <= 100) { // ~ 1 metro 
     motor.step(sPR);
     delay(motorDelay);
   }

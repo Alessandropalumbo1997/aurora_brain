@@ -7,20 +7,20 @@ from brain.msg import visual_association_cortex_msg, hcsr04_msg
 from cob_perception_msgs.msg import Detection, DetectionArray, Rect
 
 class Hcsr04:
-    distance = 0
-    distance_timestamp = 0
-
-    # Expressed in cm/sec
-    approaching_speed = 0
 
     def __init__(self, name):
         self.name = name
+        self.distance = 0
+        self.distance_timestamp = 0
+
+        # Expressed in cm/sec
+        self.approaching_speed = 0
 
     # Here we calculate the speed of objects moving towards or away from the dog and update the last_distance value
     # Negative value -> object going away, positive value -> object approaching
-    def calculate_approaching_speed(new_distance):
+    def calculate_approaching_speed(self, new_distance):
         current_time = time.time()
-        self.approaching_speed = (distance - new_distance) / (current_time - distance_timestamp)
+        self.approaching_speed = (self.distance - new_distance) / (current_time - self.distance_timestamp)
         self.distance = new_distance
         self.distance_timestamp = current_time
 
@@ -71,7 +71,7 @@ def callback_camera(data):
 
 
 def callback_hcsr04(data):
-
+    rospy.loginfo("CIAOOO")
     # Updating Hcsr04 instances data
     for hcsr04_sensor in hcsr04_sensors:
         if data.name == hcsr04_sensor.name:
