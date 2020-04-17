@@ -6,6 +6,7 @@ from std_msgs.msg import Float64
 from brain.msg import visual_association_cortex_msg
 from brain.msg import hormone_msg
 from brain.srv import SetHormone, SetHormoneResponse
+from brain.personality import amygdala_sensitivity
 
 def callback_visual_association_cortex(data):
     rospy.loginfo(rospy.get_caller_id() + '\n {}'.format(data))
@@ -16,7 +17,7 @@ def callback_visual_association_cortex(data):
 def callback_hormones(data):
     rospy.loginfo(rospy.get_caller_id() + '\n {}'.format(data))
     hormones = data
-    
+
 
 def check_approaching_objects(data):
     for item in data.hcsr04_sensors:
@@ -33,7 +34,7 @@ def listener():
     rospy.spin()
 
 def engage_fight_or_flight():
-    pub.publish("epinephrine", 50)
+    pub.publish("epinephrine", 10 * amygdala_sensitivity)
 
     # waiting a few seconds for the epinephrine to be virtually reabsorbed
     time.sleep(3)
