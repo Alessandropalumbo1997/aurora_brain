@@ -101,7 +101,7 @@ catkin_package(
   DEPENDS system_lib
 )
 
-catkin_install_python(PROGRAMS bin/oxytocin bin/epinephrine bin/dopamine bin/cortisol bin/hormone_receptor bin/auditory_association_cortex bin/visual_association_cortex bin/amygdala bin/hypothalamus
+catkin_install_python(PROGRAMS bin/oxytocin bin/epinephrine bin/dopamine bin/cortisol bin/hormone_receptor bin/auditory_association_cortex bin/visual_association_cortex bin/amygdala bin/hypothalamus bin/hippocampus
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
 ###########

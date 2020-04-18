@@ -8,7 +8,7 @@ class Personality:
     # Aurora brain is tuned to support values between 1 and 10, with other values the behaviour will be highly unpredictable
 
     """
-    This regulates how much epinephrine the amygdala secretes in a figh or flight scenario
+    This regulates how much epinephrine the amygdala secretes in a fight or flight scenario
     - a higher value will get the dog scared at everything, a dreadful life in constant fear
     - a lower value will produce a very brave (but sometimes in a dangerous way) dog
     """
@@ -34,3 +34,10 @@ class Personality:
     - a lower value will produce a dog that would witness the apocalypse from the sofa, with a beer and a joint
     """
     stress_parameter = 5;
+
+    """
+    This regulates how fast the hippocampus associates memories
+    - a higher value will produce a really responsive dog, that will inevitably become very confused at what is good and what is bad because everything can change rapidly
+    - a lower value will produce a dog that would need to see a tiger 10 times before he understands that he should run the fuck away from it
+    """
+    hippocampus_sensitivity = 5;

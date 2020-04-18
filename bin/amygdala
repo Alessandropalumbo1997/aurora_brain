@@ -1,16 +1,18 @@
 #!/usr/bin/env python
 import rospy
+import os
 import time
 from std_msgs.msg import String
 from std_msgs.msg import Float64
 from brain.msg import visual_association_cortex_msg
 from brain.msg import hormone_msg
 from brain.srv import SetHormone, SetHormoneResponse
-from brain.personality import amygdala_sensitivity
+from brain.personality import Personality
+import json
 
 def callback_visual_association_cortex(data):
-    rospy.loginfo(rospy.get_caller_id() + '\n {}'.format(data))
-
+    #rospy.loginfo(rospy.get_caller_id() + '\n {}'.format(data))
+    check_bad_objects(data)
     check_approaching_objects(data)
 
 
@@ -18,12 +20,23 @@ def callback_hormones(data):
     rospy.loginfo(rospy.get_caller_id() + '\n {}'.format(data))
     hormones = data
 
-
+# Fight or flight response is engaged if an object is approaching the dog really fast
 def check_approaching_objects(data):
     for item in data.hcsr04_sensors:
         if item.approaching_speed > 30:
             engage_fight_or_flight()
             return
+
+# Fight or flight response is engaged if the dog sees objects that are associated with bad in its episodic memory
+def check_bad_objects(data):
+    objects_being_seen = map(lambda x: x.label, data.object_detections)
+
+    for item in objects_being_seen:
+        if saved_visual_auditory_associations[item] and saved_visual_auditory_associations[item] == "bad":
+            rospy.loginfo(rospy.get_caller_id() + '\n {}'.format(item))
+            engage_fight_or_flight()
+            return
+
 
 def listener():
     rospy.init_node('amygdala', anonymous=True)
@@ -34,7 +47,7 @@ def listener():
     rospy.spin()
 
 def engage_fight_or_flight():
-    pub.publish("epinephrine", 10 * amygdala_sensitivity)
+    pub.publish("epinephrine", 10 * Personality().amygdala_sensitivity)
 
     # waiting a few seconds for the epinephrine to be virtually reabsorbed
     time.sleep(3)
@@ -43,6 +56,22 @@ def engage_fight_or_flight():
 
 
 if __name__ == '__main__':
+
+    visual_auditory_associations = {}
+
+    # Importing visual_auditory_associations from the JSON file
+    file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../src/brain/memory/episodic/visual_auditory_associations.json')
+
+    # Empty file check
+    if os.path.getsize(file_path) > 0:
+        visual_auditory_associations_file = open(file_path,"r+")
+        saved_visual_auditory_associations = json.load(visual_auditory_associations_file)
+    else:
+        visual_auditory_associations_file = open(file_path,"r+")
+        rospy.loginfo(rospy.get_caller_id() + '\n {}'.format(os.path.getsize(file_path)))
+        saved_visual_auditory_associations = {}
+
+    visual_auditory_associations_file.close()
 
     pub = rospy.Publisher('hormones', hormone_msg, queue_size=10)
     listener()

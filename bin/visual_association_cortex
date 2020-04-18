@@ -42,55 +42,7 @@ class ObjectDetection:
         self.label = label
 
 
-def callback_camera(data):
-
-    current_time = time.time()
-    found = False
-
-    # Here we update the object_detections array, there are 3 cases:
-    # 1. the detection is older than 3 seconds -> we remove it to send only detections of the last 3 seconds
-    # 2. the detection is already present in object_detections, we update its timestamp
-    # 3. the detection is new, we append it to object_detections
-    for index, detection in enumerate(data.detections):
-        found = False
-
-        for item in object_detections:
-
-            if time.time() - item.timestamp >= 3:
-                found = True
-                object_detections.remove(item)
-
-            if detection.label == item.label:
-                found = True
-                item.update(detection.label, int(detection.score*100), current_time)
-
-        if not found:
-            object_detections.append(ObjectDetection(detection.label, detection.score, current_time))
-
-    pub.publish(msg)
-
-
-def callback_hcsr04(data):
-    rospy.loginfo("CIAOOO")
-    # Updating Hcsr04 instances data
-    for hcsr04_sensor in hcsr04_sensors:
-        if data.name == hcsr04_sensor.name:
-            hcsr04_sensor.calculate_approaching_speed(data.distance)
-
-    pub.publish(msg)
-
-
-def listener():
-    rospy.init_node('visual_association_cortex', anonymous=True)
-    rospy.Subscriber('hcsr04', hcsr04_msg, callback_hcsr04)
-    rospy.Subscriber('object_detection/detections', DetectionArray, callback_camera)
-
-    rospy.spin()
-
-
-if __name__ == '__main__':
-
-    pub = rospy.Publisher('visual_association_cortex', visual_association_cortex_msg, queue_size=10)
+class VisualAssociationCortex:
 
     hcsr04_sensors = [
                         Hcsr04('lateral_left'),
@@ -109,4 +61,52 @@ if __name__ == '__main__':
     msg.hcsr04_sensors = hcsr04_sensors
     msg.object_detections = object_detections
 
-    listener()
+    pub = rospy.Publisher('visual_association_cortex', visual_association_cortex_msg, queue_size=10)
+
+
+    def callback_camera(self, data):
+
+        current_time = time.time()
+        found = False
+
+        # Here we update the object_detections array, there are 2 cases:
+        # 1. the detection is already present in object_detections, we update its timestamp
+        # 2. the detection is new, we append it to object_detections
+        for index, detection in enumerate(data.detections):
+            found = False
+
+            for item in self.object_detections:
+
+                if detection.label == item.label:
+                    found = True
+                    item.update(detection.label, int(detection.score*100), current_time)
+
+            if not found:
+                self.object_detections.append(ObjectDetection(detection.label, detection.score, current_time))
+
+        for item in self.object_detections:
+            if current_time - item.timestamp >= 3:
+                self.object_detections.remove(item)
+
+        self.pub.publish(self.msg)
+
+
+
+    def callback_hcsr04(self, data):
+
+        # Updating Hcsr04 instances data
+        for hcsr04_sensor in self.hcsr04_sensors:
+            if data.name == hcsr04_sensor.name:
+                hcsr04_sensor.calculate_approaching_speed(data.distance)
+
+
+    def listener(self):
+        rospy.init_node('visual_association_cortex', anonymous=True)
+        rospy.Subscriber('hcsr04', hcsr04_msg, self.callback_hcsr04)
+        rospy.Subscriber('object_detection/detections', DetectionArray, self.callback_camera)
+        rospy.spin()
+
+
+if __name__ == '__main__':
+
+    VisualAssociationCortex().listener()

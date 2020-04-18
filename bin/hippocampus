@@ -1,0 +1,120 @@
+#!/usr/bin/env python
+import rospy
+import time
+import sys
+import os
+from std_msgs.msg import String, Float64
+from brain.msg import visual_association_cortex_msg, auditory_association_cortex_msg, hormone_msg
+from brain.srv import SetHormone, SetHormoneResponse
+from brain.words import Words
+from brain.personality import Personality
+import json
+
+"""
+In the hippocampus episodic memories are encoded associating together various kind of stimuli
+"""
+
+class Hippocampus:
+
+    objects_being_seen = []
+    words_being_heard = []
+
+    # Dictionary where we temporarily save association between words and objects
+    visual_auditory_associations = {}
+
+
+    def callback_visual_association_cortex(self, data):
+        self.objects_being_seen = map(lambda x: x.label, data.object_detections)
+        self.combine_perceptions()
+
+
+    def callback_hormones(self, data):
+        hormones = data
+
+
+    def callback_auditory_association_cortex(self, data):
+        rospy.loginfo(rospy.get_caller_id() + '\n {}'.format(data.data))
+        # self.words_being_heard = data.data
+        self.combine_perceptions()
+
+
+    def combine_perceptions(self):
+
+        # Todo: remove the following line to get the words from the auditory association cortex callback
+        self.words_being_heard = ["si", "si"]
+
+        # Intersecting words_being_heard with lists of bad and good words saved in the Words class
+        heard_bad_word = list(set(self.words_being_heard)&set(Words().bad_words))
+        heard_good_word = list(set(self.words_being_heard)&set(Words().good_words))
+
+        if len(heard_bad_word) or len(heard_good_word):
+
+            # We generate temporary visual_auditory_associations
+            for object in self.objects_being_seen:
+
+                # We increase their value if they are good associations and decrease it if they are bad
+                if object in self.visual_auditory_associations and heard_bad_word:
+                    self.visual_auditory_associations[object] -= 10
+                elif object in self.visual_auditory_associations and heard_good_word:
+                    self.visual_auditory_associations[object] += 10
+                elif heard_bad_word:
+                    self.visual_auditory_associations[object] = -10
+                elif heard_good_word:
+                    self.visual_auditory_associations[object] = 10
+
+
+        # We check every temporary association and we save them to the episodic memory if they are over a certain threshold
+        for key, value in self.visual_auditory_associations.items():
+
+            if value >= 4 * Personality().hippocampus_sensitivity:
+                self.save_visual_auditory_association(key, "good")
+                # Removing the temporary association since it is now permanently saved
+                self.visual_auditory_associations.pop(key, None)
+
+            elif value <= -4 * Personality().hippocampus_sensitivity:
+                self.save_visual_auditory_association(key, "bad")
+                # Removing the temporary association since it is now permanently saved
+                self.visual_auditory_associations.pop(key, None)
+
+
+    def listener(self):
+        rospy.init_node('hippocampus', anonymous=True)
+        rospy.Subscriber('visual_association_cortex', visual_association_cortex_msg, self.callback_visual_association_cortex)
+
+        # rospy.Subscriber('auditory_association_cortex', auditory_association_cortex_msg, callback_auditory_association_cortex)
+        rospy.Subscriber('kws_data', String, self.callback_auditory_association_cortex)
+        rospy.Subscriber('hormones', hormone_msg, self.callback_hormones)
+
+        rospy.spin()
+
+
+    # Saving association in episodic memory
+    def save_visual_auditory_association(self, key, value):
+
+        # Importing visual_auditory_associations from the JSON file
+        file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../src/brain/memory/episodic/visual_auditory_associations.json')
+
+        # Empty file check
+        if os.path.getsize(file_path) > 0:
+            visual_auditory_associations_file = open(file_path,"r+")
+            saved_visual_auditory_associations = json.load(visual_auditory_associations_file)
+        else:
+            visual_auditory_associations_file = open(file_path,"r+")
+            rospy.loginfo(rospy.get_caller_id() + '\n {}'.format(os.path.getsize(file_path)))
+            saved_visual_auditory_associations = {}
+
+        saved_visual_auditory_associations[key] = value
+
+        # Writing to file the updated dictionary
+        visual_auditory_associations_file.seek(0)
+        visual_auditory_associations_file.truncate(0)
+        visual_auditory_associations_file.write(json.dumps(saved_visual_auditory_associations))
+        visual_auditory_associations_file.close()
+
+        rospy.loginfo(rospy.get_caller_id() + '\n {}'.format("Saving " + value + " association with " + key))
+
+
+if __name__ == '__main__':
+
+    pub = rospy.Publisher('hormones', hormone_msg, queue_size=10)
+    Hippocampus().listener()
