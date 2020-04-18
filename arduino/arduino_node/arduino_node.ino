@@ -2,6 +2,7 @@
 #include <brain/hcsr04_msg.h>
 #include <brain/ky037_msg.h>
 #include <brain/hormone_msg.h>
+#include <brain/auditory_association_cortex_msg.h>
 #include <Stepper.h>
 
 // Define ros variables
@@ -54,6 +55,7 @@ const int sPR = 200; // Steps Per Revolution
 int ky037_value = 0;
 int ky037_abs_value = 0;
 int ky037_thereshold = 552;
+const int ky037_count = 2;
 
 // defines motor object with the four IN pins
 Stepper motor = Stepper(sPR, m1, m2, m3, m4);
@@ -106,16 +108,20 @@ void hcsr04() {
 }
 
 void ky037() {
-  // Read analog output pin
-  ky037_value = analogRead(A0);
+  for (int i = 0; i < ky037_count; i++) {
+    // Read analog output pin
+    ky037_value = i==0 ? analogRead(A0) : analogRead(A1);
+    
+    // Calculate absolute value
+    ky037_abs_value = abs(ky037_value - ky037_thereshold);
   
-  // Calculate absolute value
-  ky037_abs_value = abs(ky037_value - ky037_thereshold);
+    // Building msg
+    Ky037_msg.name = i==0 ? "micro_left" : "micro_right";
+    Ky037_msg.loudness = ky037_abs_value;
 
-  // Publishing data
-  Ky037_msg.name = "micro_left";
-  Ky037_msg.loudness = ky037_abs_value;
-  ky037_pub.publish(&Ky037_msg);
+    // Publish msg
+    ky037_pub.publish(&Ky037_msg);
+  }
   nh.spinOnce();
   delay(10);
 }
