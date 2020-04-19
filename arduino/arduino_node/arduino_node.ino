@@ -2,39 +2,8 @@
 #include <brain/hcsr04_msg.h>
 #include <brain/ky037_msg.h>
 #include <brain/hormone_msg.h>
-#include <brain/auditory_association_cortex_msg.h>
+#include <brain/motor_cortex_msg.h>
 #include <Stepper.h>
-
-// Define ros variables
-ros::NodeHandle nh;
-brain::hcsr04_msg Hcsr04_msg;
-ros::Publisher hcsr04_pub("hcsr04", &Hcsr04_msg);
-brain::ky037_msg Ky037_msg;
-ros::Publisher ky037_pub("ky037", &Ky037_msg);
-
-//==== ESEMPIO SUBSCRIBER E CALLBACK ====
-      //
-      //String hormone_name;
-      //
-      //void hormoneCb(const brain::hormone_msg &msg) {
-      //  hormone_name = msg.name;
-      //  if (hormone_name == "dopamine") {
-      //    digitalWrite(LED_BUILTIN, HIGH);
-      //    delay(100);
-      //    digitalWrite(LED_BUILTIN, LOW);
-      //    delay(100);
-      //  } else {
-      //    digitalWrite(LED_BUILTIN, HIGH);
-      //    delay(1000);
-      //    digitalWrite(LED_BUILTIN, LOW);
-      //    delay(1000);
-      //  }
-      //}
-      //
-      //ros::Subscriber<brain::hormone_msg> hormone_sub("hormones", &hormoneCb);
-      //
-//=======================================
-
 
 // defines pins
 const int echoPin = 9;
@@ -49,8 +18,9 @@ const int m4 = 4;
 long duration;
 float distance;
 
-int motor_delay = 500;
+int motor_delay = 5;
 const int sPR = 200; // Steps Per Revolution
+const int steppers_count = 6;
 
 int ky037_value = 0;
 int ky037_abs_value = 0;
@@ -58,28 +28,57 @@ int ky037_thereshold = 552;
 const int ky037_count = 2;
 
 // defines motor object with the four IN pins
-Stepper motor = Stepper(sPR, m1, m2, m3, m4);
+Stepper tongue_stepper = Stepper(sPR, m1, m2, m3, m4);
+// Stepper tongue_stepper = Stepper(sPR, m5, m6, m7, m8);
+// ...
+// Stepper steppers = [tongue_stepper, jaw_stepper, left_ear_stepper, right_ear_stepper, tail_stepper, neck_stepper]
+
+// Define ros variables
+ros::NodeHandle nh;
+
+// Publishers
+brain::hcsr04_msg Hcsr04_msg;
+ros::Publisher hcsr04_pub("hcsr04", &Hcsr04_msg);
+brain::ky037_msg Ky037_msg;
+ros::Publisher ky037_pub("ky037", &Ky037_msg);
+
+brain::motor_cortex_msg Steppers;
+
+// Callbacks
+void stepper_callback(const brain::motor_cortex_msg &msg) {
+  nh.loginfo("IN CALLBACK");
+  if (msg.stepper_motors[0].impulse == 1) {
+    tongue_stepper.step(sPR);
+    delay(motor_delay);
+  }
+  else if (msg.stepper_motors[0].impulse == -1) {
+    tongue_stepper.step(-sPR);
+    delay(motor_delay);
+  }
+}
+
+// Subscribers
+ros::Subscriber<brain::motor_cortex_msg> stepper_sub("steppers", &stepper_callback);
 
 void setup() {
   // initialize ROS stuff
   nh.initNode();
   nh.advertise(hcsr04_pub);
   nh.advertise(ky037_pub);
-  // nh.subscribe(hormone_sub);
+  nh.subscribe(stepper_sub);
 
   // set pin modes
   pinMode(echoPin, INPUT); // Sets the echoPin as an Input
   pinMode(trigPin, OUTPUT); // Sets the trigPin as an Output
 
-  motor.setSpeed(50);
+  tongue_stepper.setSpeed(120);
 
-  Serial.begin(57600); // Starts the serial communication
+  Serial.begin(500000); // Starts the serial communication
 }
 
 void loop() {
   hcsr04();
   ky037();
-  motor_control();
 }
 
 void hcsr04() {
@@ -124,11 +123,4 @@ void ky037() {
   }
   nh.spinOnce();
   delay(10);
-}
-
-void motor_control() {
-  if (distance <= 100) { // ~ 1 metro 
-    motor.step(sPR);
-    delay(motor_delay);
-  }
 }

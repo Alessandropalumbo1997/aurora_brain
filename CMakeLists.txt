@@ -45,6 +45,8 @@ add_message_files(
 	object_detection_msg.msg
 	auditory_association_cortex_msg.msg
   visual_association_cortex_msg.msg
+	motor_cortex_msg.msg
+	stepper_msg.msg
 )
 
 ## Generate services in the 'srv' folder
