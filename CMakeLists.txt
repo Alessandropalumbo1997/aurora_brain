@@ -41,6 +41,7 @@ add_message_files(
 	ky037_msg.msg
 	hcsr04_msg.msg
 	hormone_msg.msg
+	word_msg.msg
 	object_detection_msg.msg
 	auditory_association_cortex_msg.msg
   visual_association_cortex_msg.msg

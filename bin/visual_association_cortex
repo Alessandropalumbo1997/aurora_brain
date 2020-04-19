@@ -84,9 +84,12 @@ class VisualAssociationCortex:
             if not found:
                 self.object_detections.append(ObjectDetection(detection.label, detection.score, current_time))
 
+        # Removing instances seen more than 3 seconds ago
         for item in self.object_detections:
             if current_time - item.timestamp >= 3:
                 self.object_detections.remove(item)
+
+        rospy.loginfo(rospy.get_caller_id() + '\n H: {}'.format(self.msg.object_detections))
 
         self.pub.publish(self.msg)
 

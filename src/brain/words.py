@@ -13,7 +13,7 @@ class Words:
     bad_words = [
         "cattivo",
         "cattiva",
-        "no"
+        "no",
         "male"
     ];
 

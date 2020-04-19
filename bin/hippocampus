@@ -33,19 +33,25 @@ class Hippocampus:
 
 
     def callback_auditory_association_cortex(self, data):
-        rospy.loginfo(rospy.get_caller_id() + '\n {}'.format(data.data))
-        # self.words_being_heard = data.data
+        self.words_being_heard =  map(lambda x: x.word, data.words)
         self.combine_perceptions()
 
 
     def combine_perceptions(self):
 
-        # Todo: remove the following line to get the words from the auditory association cortex callback
-        self.words_being_heard = ["si", "si"]
+        # rospy.loginfo(rospy.get_caller_id() + '\n {}'.format(self.objects_being_seen))
+        # rospy.loginfo(rospy.get_caller_id() + '\n {}'.format(self.words_being_heard))
 
         # Intersecting words_being_heard with lists of bad and good words saved in the Words class
         heard_bad_word = list(set(self.words_being_heard)&set(Words().bad_words))
         heard_good_word = list(set(self.words_being_heard)&set(Words().good_words))
+
+        rospy.loginfo(rospy.get_caller_id() + '\n {}'.format('===========init'))
+        # rospy.loginfo(rospy.get_caller_id() + '\n {}'.format(Words().bad_words))
+        # rospy.loginfo(rospy.get_caller_id() + '\n {}'.format(self.objects_being_seen))
+        rospy.loginfo(rospy.get_caller_id() + '\n {}'.format(self.visual_auditory_associations))
+        rospy.loginfo(rospy.get_caller_id() + '\n {}'.format('===========end'))
+
 
         if len(heard_bad_word) or len(heard_good_word):
 
@@ -81,8 +87,7 @@ class Hippocampus:
         rospy.init_node('hippocampus', anonymous=True)
         rospy.Subscriber('visual_association_cortex', visual_association_cortex_msg, self.callback_visual_association_cortex)
 
-        # rospy.Subscriber('auditory_association_cortex', auditory_association_cortex_msg, callback_auditory_association_cortex)
-        rospy.Subscriber('kws_data', String, self.callback_auditory_association_cortex)
+        rospy.Subscriber('auditory_association_cortex', auditory_association_cortex_msg, self.callback_auditory_association_cortex)
         rospy.Subscriber('hormones', hormone_msg, self.callback_hormones)
 
         rospy.spin()

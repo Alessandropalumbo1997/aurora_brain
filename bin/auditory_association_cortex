@@ -1,17 +1,74 @@
 #!/usr/bin/env python
 import rospy
+import time
 from std_msgs.msg import String
 from std_msgs.msg import Float64
+from brain.msg import visual_association_cortex_msg, auditory_association_cortex_msg, ky037_msg
 
-def callback(data):
-    rospy.loginfo(rospy.get_caller_id() + '\n H: {}'.format(data.data))
+class Word:
 
-def listener():
-    rospy.init_node('auditory_association_cortex', anonymous=True)
-    rospy.Subscriber('kws_data', String, callback)
+    word = ""
+    timestamp = 0
 
-    # spin() simply keeps python from exiting until this node is stopped
-    rospy.spin()
+    def __init__(self, word, timestamp):
+        self.word = word
+        self.timestamp = timestamp
+
+    def update(self, word, timestamp):
+        self.word = word
+        self.timestamp = timestamp
+
+
+class AuditoryAssociationCortex:
+
+    pub = rospy.Publisher('auditory_association_cortex', auditory_association_cortex_msg, queue_size=10)
+    ky037_sensors = []
+    words = []
+    msg = auditory_association_cortex_msg()
+    msg.ky037_sensors = ky037_sensors
+    msg.words = words
+
+
+    def callback_speech_recognition(self, word):
+
+        current_time = time.time()
+        found = False
+        word = str(word.data).strip()
+        rospy.loginfo(rospy.get_caller_id() + '\n H: {}'.format(word))
+
+        # Here we update the words array, there are 2 cases:
+        # 1. the word is already present in words, we update its timestamp
+        # 2. the word is new, we append it to words
+        for item in self.words:
+            if word == item:
+                found = True
+                item.update(word, current_time)
+
+        if not found:
+            self.words.append(Word(word, current_time))
+
+        # Removing instances heard more than 3 seconds ago
+        for item in self.words:
+            if current_time - item.timestamp >= 3:
+                self.words.remove(item)
+
+        rospy.loginfo(rospy.get_caller_id() + '\n H: {}'.format(self.msg.words))
+        self.pub.publish(self.msg)
+
+
+    def callback_ky037(self, data):
+        rospy.loginfo(rospy.get_caller_id() + '\n H: {}'.format(data.data))
+
+
+    def listener(self):
+        rospy.init_node('auditory_association_cortex', anonymous=True)
+        rospy.Subscriber('kws_data', String, self.callback_speech_recognition)
+        rospy.Subscriber('ky037', String, self.callback_ky037)
+
+        # spin() simply keeps python from exiting until this node is stopped
+        rospy.spin()
+
 
 if __name__ == '__main__':
-    listener()
+
+    AuditoryAssociationCortex().listener()
