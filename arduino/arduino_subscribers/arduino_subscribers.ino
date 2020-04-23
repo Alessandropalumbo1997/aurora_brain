@@ -5,33 +5,33 @@
 #include <brain/motor_cortex_msg.h>
 #include <Stepper.h>
 
-// defines pins
-const int echoPin = 9;
-const int trigPin = 8;
+// #############################
+// ######### CONSTANTS #########
+// #############################
 
-const int m1 = 7;
-const int m2 = 6;
-const int m3 = 5;
-const int m4 = 4;
+const int M1 = 7;
+const int M2 = 6;
+const int M3 = 5;
+const int M4 = 4;
+
+const int M5 = 53;
+const int M6 = 51;
+const int M7 = 49;
+const int M8 = 47;
+
+const int SPR = 180; // Steps Per Revolution
+const int STEPPERS = 2;
 
 // defines variables
-long duration;
-float distance;
-
 int motor_delay = 5;
-const int sPR = 200; // Steps Per Revolution
-const int steppers_count = 6;
 
-int ky037_value = 0;
-int ky037_abs_value = 0;
-int ky037_thereshold = 552;
-const int ky037_count = 2;
+int pins[STEPPERS*4];
 
 // defines motor object with the four IN pins
-Stepper tongue_stepper = Stepper(sPR, m1, m2, m3, m4);
-// Stepper tongue_stepper = Stepper(sPR, m5, m6, m7, m8);
-// ...
-// Stepper steppers = [tongue_stepper, jaw_stepper, left_ear_stepper, right_ear_stepper, tail_stepper, neck_stepper]
+Stepper tongue_stepper = Stepper(SPR, M1, M2, M3, M4);
+Stepper jaw_stepper = Stepper(SPR, M5, M6, M7, M8);
+
+Stepper steppers[STEPPERS] = {tongue_stepper, jaw_stepper};
 
 // Define ros variables
 ros::NodeHandle nh;
@@ -39,14 +39,13 @@ brain::motor_cortex_msg Steppers;
 
 // Callbacks
 void stepper_callback(const brain::motor_cortex_msg &msg) {
-  nh.loginfo("IN CALLBACK");
   if (msg.stepper_motors[0].impulse == 1) {
-    tongue_stepper.step(sPR);
-    delay(motor_delay);
+    tongue_stepper.step(SPR);
+    nh.loginfo("forward");
   }
   else if (msg.stepper_motors[0].impulse == -1) {
-    tongue_stepper.step(-sPR);
-    delay(motor_delay);
+    tongue_stepper.step(-SPR);
+    nh.loginfo("backward");
   }
 }
 
@@ -58,11 +57,11 @@ void setup() {
   nh.initNode();
   nh.subscribe(stepper_sub);
 
-  // set pin modes
-  pinMode(echoPin, INPUT); // Sets the echoPin as an Input
-  pinMode(trigPin, OUTPUT); // Sets the trigPin as an Output
+  for (int i = 0; i < STEPPERS; i++) {
+//    Serial.println(steppers[i]);
+  }
 
-  tongue_stepper.setSpeed(120);
+  tongue_stepper.setSpeed(95); // MAX 100
 
   Serial.begin(500000); // Starts the serial communication
 }

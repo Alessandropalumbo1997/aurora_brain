@@ -47,6 +47,7 @@ add_message_files(
   visual_association_cortex_msg.msg
 	motor_cortex_msg.msg
 	stepper_msg.msg
+  mpu6050_msg.msg
 )
 
 ## Generate services in the 'srv' folder
