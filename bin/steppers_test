@@ -43,10 +43,12 @@ class MotorCortex:
 
         while not rospy.is_shutdown():
             rospy.init_node("motor_cortex", anonymous=True)
-            rate = rospy.Rate(1)
+            rate = rospy.Rate(0.4)
 
-            ran = random.randint(-1, 1)
-            self.msg.stepper_motors[0].set_impulse(ran)
+            # random.randint(-1, 1)
+            self.msg.stepper_motors[0].set_impulse(120)
+            # self.msg.stepper_motors[1].set_impulse(random.randint(-1, 1))
+            # self.msg.stepper_motors[2].set_impulse(random.randint(-1, 1))
 
             self.pub.publish(self.msg)
 
