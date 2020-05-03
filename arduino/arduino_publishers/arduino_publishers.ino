@@ -12,12 +12,11 @@
 // ######### CONSTANTS #########
 // #############################
 
-const int ECHO = 2; // HC-SR02 echo pin
-const int TRIG = 3; // HC-SR02 trigger pin
+const int ECHO = 9; // HC-SR02 echo pin
+const int TRIG = 8; // HC-SR02 trigger pin
 const int KY037 = 2; // Number of ky037 microphones connected
 const uint8_t n = 2; // Number of MPUs connected
 const char MPU_NAMES[n][50] = {"under_knee_left_posterior", "above_knee_left_posterior"};
-// , "above_knee_left_posterior"
 
 // #############################
 // ######### VARIABLES #########
@@ -144,13 +143,13 @@ void loop() {
 
     mpu6050(i, temperature);
     // printData(i);
-    delay(1000);
+    delay(10);
   }
 
   // ###################################
 
   nh.spinOnce();
-  delay(500);
+  delay(10);
 }
 
 void hcsr04() {

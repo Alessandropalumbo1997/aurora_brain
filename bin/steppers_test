@@ -10,16 +10,19 @@ class Stepper:
 
     name = ""
     impulse = 0
+    forward = 1;
 
     def __init__(self, name):
         self.name = name
         self.impulse = 0
+        self.forward = 1;
 
-    def set_impulse(self, impulse):
+    def set_impulse(self, impulse, forward):
         # -1 -> backward
         # 0 -> stopped
         # 1 -> forward
         self.impulse = impulse
+        self.forward = forward
 
 class MotorCortex:
 
@@ -46,8 +49,8 @@ class MotorCortex:
             rate = rospy.Rate(0.4)
 
             # random.randint(-1, 1)
-            self.msg.stepper_motors[0].set_impulse(120)
-            # self.msg.stepper_motors[1].set_impulse(random.randint(-1, 1))
+            self.msg.stepper_motors[0].set_impulse(120, 0)
+            self.msg.stepper_motors[1].set_impulse(70, 0)
             # self.msg.stepper_motors[2].set_impulse(random.randint(-1, 1))
 
             self.pub.publish(self.msg)

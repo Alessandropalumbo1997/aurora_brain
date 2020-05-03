@@ -3,63 +3,59 @@
 #include <brain/ky037_msg.h>
 #include <brain/hormone_msg.h>
 #include <brain/motor_cortex_msg.h>
-#include <AccelStepper.h>
-#include <MultiStepper.h>
 
 // #############################
 // ######### CONSTANTS #########
 // #############################
 
 const int SPR = 180; // Steps Per Revolution
-const int STEPPERS = 3;
-const int MP[STEPPERS*4] = {13, 12, 53, 51, 11, 10, 47, 45, 9, 8, 41, 39};
-// const int MP[4] = {13, 12, 53, 51};
+const int STEPPERS = 2; // number of stepper motors
+// const int PINS = STEPPERS * 4; // number of pins of stepper motors
+int MP[STEPPERS][4] = {{10, 11, 12, 13}, {6, 7, 8, 9}};
 
 // #############################
 // ######### VARIABLES #########
 // #############################
 
-// Alas its not possible to build an array of these with different pins for each :-(
-AccelStepper tongue_stepper(AccelStepper::FULL4WIRE, MP[0], MP[1], MP[2], MP[3]);
-AccelStepper jaw_stepper(AccelStepper::FULL4WIRE, MP[4], MP[5], MP[6], MP[7]);
-AccelStepper left_ear_stepper(AccelStepper::FULL4WIRE, MP[8], MP[9], MP[10], MP[11]);
-
-// Up to 10 steppers can be handled as a group by MultiStepper
-MultiStepper steppers;
-
-long positions[STEPPERS];
-int motor_delay = 5;
+long del = 1500; // delay in microseconds
 
 // #############################
 // ############ ROS ############
 // #############################
 
-// Define ros variables
+// ######### Variables #########
 ros::NodeHandle nh;
-brain::motor_cortex_msg Steppers;
 
-// Callbacks
+// ######### Callbacks #########
 void stepper_callback(const brain::motor_cortex_msg &msg) {
   nh.loginfo("CACCHIO");
-  for (int i = 0; i < STEPPERS; i++) {
-    if (msg.stepper_motors[i].impulse == 0)
-      positions[i] = 0;
-    else if (msg.stepper_motors[i].impulse == 1) {
-      positions[i] = 600;
-      nh.loginfo("FORWARD ->");
+
+  for (int j = 0; j < STEPPERS; j++) {
+    int impulse = map(msg.stepper_motors[j].impulse, 0, 127, 0, 500);
+    nh.loginfo("SONO UN CAzzo DI MOTORE");
+
+    for (int i = 0; i <= impulse; i++) {
+      if (msg.stepper_motors[j].forward == 1) {
+        one(MP[j][0], MP[j][1], MP[j][2], MP[j][3]);
+        two(MP[j][0], MP[j][1], MP[j][2], MP[j][3]);
+        three(MP[j][0], MP[j][1], MP[j][2], MP[j][3]);
+        four(MP[j][0], MP[j][1], MP[j][2], MP[j][3]);
+      }
+      else if (msg.stepper_motors[j].forward == 0) {
+        four(MP[j][0], MP[j][1], MP[j][2], MP[j][3]);
+        three(MP[j][0], MP[j][1], MP[j][2], MP[j][3]);
+        two(MP[j][0], MP[j][1], MP[j][2], MP[j][3]);
+        one(MP[j][0], MP[j][1], MP[j][2], MP[j][3]);
+      }
     }
-    else if (msg.stepper_motors[i].impulse == -1) {
-      positions[i] = -600;
-      nh.loginfo("<- BACKWARD");
-    }
+
+    zero(MP[j][0], MP[j][1], MP[j][2], MP[j][3]);
   }
 
-  steppers.moveTo(positions);
-  steppers.runSpeedToPosition();
-//  nh.spinOnce();
+  delay(1000);
 }
 
-// Subscribers
+// ######## Subscribers ########
 ros::Subscriber<brain::motor_cortex_msg> stepper_sub("steppers", &stepper_callback);
 
 // #############################
@@ -70,27 +66,51 @@ void setup() {
   // initialize ROS stuff
   nh.initNode();
   nh.subscribe(stepper_sub);
-  
- // Configure each stepper
-  tongue_stepper.setMaxSpeed(300.0);
-  tongue_stepper.setAcceleration(100.0);
-  tongue_stepper.moveTo(0);
-  // tongue_stepper.run();
-  
-  jaw_stepper.setMaxSpeed(300.0);
-  jaw_stepper.setAcceleration(100.0);
-  jaw_stepper.moveTo(0);
 
-  left_ear_stepper.setMaxSpeed(300.0);
-  left_ear_stepper.setAcceleration(100.0);
-  left_ear_stepper.moveTo(0);
-
-  steppers.addStepper(tongue_stepper);
-  steppers.addStepper(jaw_stepper);
-  steppers.addStepper(left_ear_stepper);
-  // steppers.runSpeedToPosition();
+  // initialize all stepper pins
+  for (int i = 0; i < STEPPERS; i++) {
+    pinMode(MP[i][0], OUTPUT);
+    pinMode(MP[i][1], OUTPUT);
+    pinMode(MP[i][2], OUTPUT);
+    pinMode(MP[i][3], OUTPUT);
+  }
 
   Serial.begin(500000); // Starts the serial communication
+}
+
+void zero(int A, int B, int C, int D) {
+  digitalWrite(A, LOW);
+  digitalWrite(B, LOW);
+  digitalWrite(C, LOW);
+  digitalWrite(D, LOW);
+}
+void one(int A, int B, int C, int D) {
+  digitalWrite(A, LOW);
+  digitalWrite(B, HIGH);
+  digitalWrite(C, HIGH);
+  digitalWrite(D, LOW);
+  delayMicroseconds(del);
+}
+void two(int A, int B, int C, int D) {
+  digitalWrite(A, LOW);
+  digitalWrite(B, HIGH);
+  digitalWrite(C, LOW);
+  digitalWrite(D, HIGH);
+  delayMicroseconds(del);
+}
+void three(int A, int B, int C, int D) {
+  digitalWrite(A, HIGH);
+  digitalWrite(B, LOW);
+  digitalWrite(C, LOW);
+  digitalWrite(D, HIGH);
+  delayMicroseconds(del);
+}
+void four(int A, int B, int C, int D) {
+  digitalWrite(A, HIGH);
+  digitalWrite(B, LOW);
+  digitalWrite(C, HIGH);
+  digitalWrite(D, LOW);
+  delayMicroseconds(del);
 }
 
 void loop() {
