@@ -9,7 +9,7 @@
 // ######### CONSTANTS #########
 // #############################
 
-const int SPR = 200; // Steps Per Revolution
+// const int SPR = 200; // Steps Per Revolution
 const int STEPPERS = 2; // number of stepper motors
 // const int PINS = STEPPERS * 4; // number of pins of stepper motors
 
@@ -17,7 +17,7 @@ const int STEPPERS = 2; // number of stepper motors
 // ######### VARIABLES #########
 // #############################
 
-long del = 3000; // delay in microseconds
+long del = 1500; // delay in microsecondi tra gli step 1, 2, 3 e 4 per ogni motore
 int MP[STEPPERS][4] = {{10, 11, 12, 13}, {4, 5, 6, 7}};
 // Stepper tongue_stepper = Stepper(SPR, MP[0][0], MP[0][1], MP[0][2], MP[0][3]);
 // Stepper jaw_stepper = Stepper(SPR, MP[1][0], MP[1][1], MP[1][2], MP[1][3]);
@@ -34,7 +34,10 @@ void stepper_callback(const brain::motor_cortex_msg &msg) {
   nh.loginfo("CACCHIO");
 
   int highest_impulse = 0;
+  del = 1500 * STEPPERS;
 
+  // riceviamo da ROS un array di 6 motori con impulsi (int) e direzioni (bool)
+  // Qua vengono ciclati gli impulsi per ogni motore e viene ricavato il maggiore tra essi.
   for (int i = 0; i < STEPPERS; i++) {
     int impulse = msg.stepper_motors[i].impulse;
     if (impulse > highest_impulse) {
@@ -42,6 +45,18 @@ void stepper_callback(const brain::motor_cortex_msg &msg) {
     }
   }
 
+  highest_impulse = map(highest_impulse, 0, 127, 0, 500);
+
+  // La motor cortex in ROS manda valori di tipo int8 (max 127), quindi li rimappiamo singolarmente x avere un numero maggiore...
+  // ...che porta conseguentemente a movimenti più lunghi
+  // Tutto questo discorso è possibile xk conosciamo l'ordine preciso dei 6 motori all'interno del motor_cortex_msg
+  // ORDINE DEI MOTORI:
+  // 1. tongue
+  // 2. jaw
+  // 3. left_ear
+  // 4. right_ear
+  // 5. tail
+  // 6. neck
   int tongue_impulse = map(msg.stepper_motors[0].impulse, 0, 127, 0, 500);
   int jaw_impulse = map(msg.stepper_motors[1].impulse, 0, 127, 0, 500);
   int left_ear_impulse = map(msg.stepper_motors[2].impulse, 0, 127, 0, 500);
@@ -49,45 +64,60 @@ void stepper_callback(const brain::motor_cortex_msg &msg) {
   int tail_impulse = map(msg.stepper_motors[4].impulse, 0, 127, 0, 500);
   int neck_impulse = map(msg.stepper_motors[5].impulse, 0, 127, 0, 500);
 
-  for (int i = 0; i <= highest_impulse; i++) {
+  bool tongue_stopped = false;
+  bool jaw_stopped = false;
+  bool left_ear_stopped = false;
+  bool righe_ear_stopped = false;
+  bool tail_stopped = false;
+  bool neck_stopped = false;
+
+
+  // a questo punto faccio un ciclo che dura quanto l'impulso maggiore (cioè il motore che deve muoversi di più)
+  // a ogni giro controllo se l'impulso per ogni motore è > 0
+  // Se è true, allora vado a chiamare la funzione move_*nomestepper* passando il parametro forward di quel motore (bool) che serve per capire se devo andare avanti o indietro
+  // Se è false, IL MOTORE INTERESSATO NON DOVREBBE MUOVERSI, MENTRE GLI ALTRI CHE HANNO ANCORA TRUE SI
+  // Purtroppo però se mi trovo in una situazione in cui ho un motore con impulso > 0 (dovrebbe muoversi) e uno con impulso <= 0 (non dovrebbe muoversi)...
+  // ... quello che dovrebbe muoversi invece si ferma insieme all'altro
+  for (int i = 0; i <= highest_impulse; i++) {    
     if (tongue_impulse > 0) {
       nh.loginfo("TONGUE");
       move_tongue(msg.stepper_motors[0].forward);
-      tongue_impulse--;  
+      tongue_impulse--;
+    } else if (!tongue_stopped && tongue_impulse <= 0) {
+      del -= 1000;
+      tongue_stopped = true;
     }
-
+    
     if (jaw_impulse > 0) {
       nh.loginfo("JAW");
       move_jaw(msg.stepper_motors[1].forward);
-      jaw_impulse--;  
+      jaw_impulse--;
+    }
+    else if (!jaw_stopped && jaw_impulse <= 0) {
+      del -= 1000;
+      jaw_stopped = true;
     }
   }
 
-//  for (int i = 0; i <= highest_impulse; i++) {
-//    move_jaw(msg.stepper_motors[1].forward, jaw_impulse);
-//    jaw_impulse--;
-//  }
-
-//    while (highest_impulse > 0) {
-//      move_steppers(msg.stepper_motors[0].forward, tongue_impulse,
-//                    msg.stepper_motors[1].forward, jaw_impulse,
-//                    msg.stepper_motors[2].forward, left_ear_impulse,
-//                    msg.stepper_motors[3].forward, right_ear_impulse,
-//                    msg.stepper_motors[4].forward, tail_impulse,
-//                    msg.stepper_motors[5].forward, neck_impulse);
-//
-//                    nh.loginfo("LOZZIO");
-//  
-//      tongue_impulse--;
-//      jaw_impulse--;
-//      left_ear_impulse--;
-//      right_ear_impulse--;
-//      tail_impulse--;
-//      neck_impulse--;
-//      highest_impulse--;
-//      delay(10);
-//    }
-
+  //    while (highest_impulse > 0) {
+  //      move_steppers(msg.stepper_motors[0].forward, tongue_impulse,
+  //                    msg.stepper_motors[1].forward, jaw_impulse,
+  //                    msg.stepper_motors[2].forward, left_ear_impulse,
+  //                    msg.stepper_motors[3].forward, right_ear_impulse,
+  //                    msg.stepper_motors[4].forward, tail_impulse,
+  //                    msg.stepper_motors[5].forward, neck_impulse);
+  //
+  //                    nh.loginfo("LOZZIO");
+  //
+  //      tongue_impulse--;
+  //      jaw_impulse--;
+  //      left_ear_impulse--;
+  //      right_ear_impulse--;
+  //      tail_impulse--;
+  //      neck_impulse--;
+  //      highest_impulse--;
+  //      delay(10);
+  //    }
 
   delay(1000);
 }
@@ -162,6 +192,7 @@ void tongue_0() {
   digitalWrite(MP[0][3], LOW);
 }
 
+// Questa funzione riceve in input il boolean che indica la direzione ed esegue le funzioni 1, 2, 3, 4 per ogni motore, oppure le fa al contrario se devo andare all'indietro
 void move_tongue(bool tongue_f) {
   if (tongue_f) {
     tongue_1();
