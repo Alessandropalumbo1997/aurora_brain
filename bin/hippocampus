@@ -72,15 +72,18 @@ class Hippocampus:
         # We check every temporary association and we save them to the episodic memory if they are over a certain threshold
         for key, value in self.visual_auditory_associations.items():
 
-            if value >= 4 * Personality().hippocampus_sensitivity:
-                self.save_visual_auditory_association(key, "good")
-                # Removing the temporary association since it is now permanently saved
-                self.visual_auditory_associations.pop(key, None)
+            # People are always good, lol
+            if key != "person":
 
-            elif value <= -4 * Personality().hippocampus_sensitivity:
-                self.save_visual_auditory_association(key, "bad")
-                # Removing the temporary association since it is now permanently saved
-                self.visual_auditory_associations.pop(key, None)
+                if value >= 4 * Personality().hippocampus_sensitivity:
+                    self.save_visual_auditory_association(key, "good")
+                    # Removing the temporary association since it is now permanently saved
+                    self.visual_auditory_associations.pop(key, None)
+
+                elif value <= -4 * Personality().hippocampus_sensitivity:
+                    self.save_visual_auditory_association(key, "bad")
+                    # Removing the temporary association since it is now permanently saved
+                    self.visual_auditory_associations.pop(key, None)
 
 
     def listener(self):
