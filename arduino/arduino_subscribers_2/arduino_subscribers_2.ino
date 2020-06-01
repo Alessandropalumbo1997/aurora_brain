@@ -9,18 +9,14 @@
 // ######### CONSTANTS #########
 // #############################
 
-// const int SPR = 200; // Steps Per Revolution
-const int STEPPERS = 2; // number of stepper motors
-// const int PINS = STEPPERS * 4; // number of pins of stepper motors
+const int STEPPERS = 3; // number of stepper motors
+const int MP[STEPPERS][4] = {{10, 11, 12, 13}, {5, 6, 7, 8}, {0, 1, 2, 3}};
 
 // #############################
 // ######### VARIABLES #########
 // #############################
 
 long del = 1500; // delay in microsecondi tra gli step 1, 2, 3 e 4 per ogni motore
-int MP[STEPPERS][4] = {{10, 11, 12, 13}, {4, 5, 6, 7}};
-// Stepper tongue_stepper = Stepper(SPR, MP[0][0], MP[0][1], MP[0][2], MP[0][3]);
-// Stepper jaw_stepper = Stepper(SPR, MP[1][0], MP[1][1], MP[1][2], MP[1][3]);
 
 // #############################
 // ############ ROS ############
@@ -97,53 +93,23 @@ void stepper_callback(const brain::motor_cortex_msg &msg) {
       del -= 1000;
       jaw_stopped = true;
     }
+
+    if (left_ear_impulse > 0) {
+      nh.loginfo("JAW");
+      move_jaw(msg.stepper_motors[2].forward);
+      left_ear_impulse--;
+    }
+    else if (!left_ear_stopped && left_ear_impulse <= 0) {
+      del -= 1000;
+      left_ear_stopped = true;
+    }
   }
 
-  //    while (highest_impulse > 0) {
-  //      move_steppers(msg.stepper_motors[0].forward, tongue_impulse,
-  //                    msg.stepper_motors[1].forward, jaw_impulse,
-  //                    msg.stepper_motors[2].forward, left_ear_impulse,
-  //                    msg.stepper_motors[3].forward, right_ear_impulse,
-  //                    msg.stepper_motors[4].forward, tail_impulse,
-  //                    msg.stepper_motors[5].forward, neck_impulse);
-  //
-  //                    nh.loginfo("LOZZIO");
-  //
-  //      tongue_impulse--;
-  //      jaw_impulse--;
-  //      left_ear_impulse--;
-  //      right_ear_impulse--;
-  //      tail_impulse--;
-  //      neck_impulse--;
-  //      highest_impulse--;
-  //      delay(10);
-  //    }
-
-  delay(1000);
+  delay(250);
 }
 
 // ######## Subscribers ########
 ros::Subscriber<brain::motor_cortex_msg> stepper_sub("steppers", &stepper_callback);
-
-// #############################
-// ########## METHODS ##########
-// #############################
-
-//void move_steppers(bool tongue_f, int tongue_i,
-//                   bool jaw_f, int jaw_i,
-//                   bool left_ear_f, int left_ear_i,
-//                   bool right_ear_f, int righe_ear_i,
-//                   bool tail_f, int tail_i,
-//                   bool neck_f, int neck_i) {
-//
-//  if (tongue_i > 0) tongue_stepper.step(tongue_f ? 1 : -1);
-//  if (jaw_i > 0) jaw_stepper.step(jaw_f ? 1 : -1);
-//  //  if (left_ear_i > 0) left_ear_stepper.step(left_ear_forward ? 1 : -1);
-//  //  if (right_ear_i > 0) right_ear_stepper.step(right_ear_forward ? 1 : -1);
-//  //  if (tail_i > 0) tail_stepper.step(tail_forward ? 1 : -1);
-//  //  if (neck_i > 0) neck_stepper.step(neck_forward ? 1 : -1);
-//
-//}
 
 // #############################
 // ########### TONGUE ##########
@@ -183,13 +149,6 @@ void tongue_4() {
   digitalWrite(MP[0][2], HIGH);
   digitalWrite(MP[0][3], LOW);
   delayMicroseconds(del);
-}
-
-void tongue_0() {
-  digitalWrite(MP[0][0], LOW);
-  digitalWrite(MP[0][1], LOW);
-  digitalWrite(MP[0][2], LOW);
-  digitalWrite(MP[0][3], LOW);
 }
 
 // Questa funzione riceve in input il boolean che indica la direzione ed esegue le funzioni 1, 2, 3, 4 per ogni motore, oppure le fa al contrario se devo andare all'indietro
@@ -247,14 +206,6 @@ void jaw_4() {
   delayMicroseconds(del);
 }
 
-void jaw_0() {
-  // 4
-  digitalWrite(MP[1][0], LOW);
-  digitalWrite(MP[1][1], LOW);
-  digitalWrite(MP[1][2], LOW);
-  digitalWrite(MP[1][3], LOW);
-}
-
 void move_jaw(bool jaw_f) {
   if (jaw_f) {
     jaw_1();
@@ -268,6 +219,64 @@ void move_jaw(bool jaw_f) {
     jaw_1();
   }
 }
+
+// #############################
+// ######### LEFT EAR ##########
+// #############################
+
+void left_ear_1() {
+  // 1
+  digitalWrite(MP[1][0], LOW);
+  digitalWrite(MP[1][1], HIGH);
+  digitalWrite(MP[1][2], HIGH);
+  digitalWrite(MP[1][3], LOW);
+  delayMicroseconds(del);
+}
+
+void left_ear_2() {
+  // 2
+  digitalWrite(MP[1][0], LOW);
+  digitalWrite(MP[1][1], HIGH);
+  digitalWrite(MP[1][2], LOW);
+  digitalWrite(MP[1][3], HIGH);
+  delayMicroseconds(del);
+}
+
+void left_ear_3() {
+  // 3
+  digitalWrite(MP[1][0], HIGH);
+  digitalWrite(MP[1][1], LOW);
+  digitalWrite(MP[1][2], LOW);
+  digitalWrite(MP[1][3], HIGH);
+  delayMicroseconds(del);
+}
+
+void left_ear_4() {
+  // 4
+  digitalWrite(MP[1][0], HIGH);
+  digitalWrite(MP[1][1], LOW);
+  digitalWrite(MP[1][2], HIGH);
+  digitalWrite(MP[1][3], LOW);
+  delayMicroseconds(del);
+}
+
+void move_left_ear(bool left_ear_f) {
+  if (left_ear_f) {
+    left_ear_1();
+    left_ear_2();
+    left_ear_3();
+    left_ear_4();
+  } else {
+    left_ear_4();
+    left_ear_3();
+    left_ear_2();
+    left_ear_1();
+  }
+}
+
+// #############################
+// ########## METHODS ##########
+// #############################
 
 void setup() {
   // initialize ROS stuff

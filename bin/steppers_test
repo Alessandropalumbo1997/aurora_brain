@@ -8,32 +8,29 @@ from brain.msg import motor_cortex_msg
 
 class Stepper:
 
-    name = ""
+    index = 0
     impulse = 0
-    forward = 1;
 
-    def __init__(self, name):
-        self.name = name
+    def __init__(self, index):
+        self.index = index
         self.impulse = 0
-        self.forward = True;
 
-    def set_impulse(self, impulse, forward):
+    def set_impulse(self, impulse):
         # -1 -> backward
         # 0 -> stopped
         # 1 -> forward
         self.impulse = impulse
-        self.forward = forward
 
 class MotorCortex:
 
     stepper_motors = [
 
-        Stepper("tongue_stepper"),
-        Stepper("jaw_stepper"),
-        Stepper("left_ear_stepper"),
-        Stepper("right_ear_stepper"),
-        Stepper("tail_stepper"),
-        Stepper("neck_stepper")
+        Stepper(0), # tongue
+        Stepper(1), # jaw
+        Stepper(2), # left ear
+        Stepper(3), # right ear
+        Stepper(4), # tail
+        Stepper(5)  # neck
 
     ]
 
@@ -46,11 +43,12 @@ class MotorCortex:
 
         while not rospy.is_shutdown():
             rospy.init_node("motor_cortex", anonymous=True)
-            rate = rospy.Rate(0.4)
+            rate = rospy.Rate(2)
 
             # random.randint(-1, 1)
-            self.msg.stepper_motors[0].set_impulse(120, 0)
-            self.msg.stepper_motors[1].set_impulse(40, 1)
+            self.msg.stepper_motors[0].set_impulse(40)
+            self.msg.stepper_motors[1].set_impulse(80)
+            self.msg.stepper_motors[2].set_impulse(80)
             # self.msg.stepper_motors[2].set_impulse(random.randint(-1, 1))
 
             self.pub.publish(self.msg)
