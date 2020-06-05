@@ -46,9 +46,9 @@ class MotorCortex:
             rate = rospy.Rate(2)
 
             # random.randint(-1, 1)
-            self.msg.stepper_motors[0].set_impulse(40)
-            self.msg.stepper_motors[1].set_impulse(80)
-            self.msg.stepper_motors[2].set_impulse(80)
+            self.msg.stepper_motors[0].set_impulse(200)
+            self.msg.stepper_motors[1].set_impulse(200)
+            self.msg.stepper_motors[2].set_impulse(200)
             # self.msg.stepper_motors[2].set_impulse(random.randint(-1, 1))
 
             self.pub.publish(self.msg)

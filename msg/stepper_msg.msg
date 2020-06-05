@@ -1,2 +1,2 @@
-int8 index
-int8 impulse
+uint8 index
+uint16 impulse

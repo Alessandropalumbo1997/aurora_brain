@@ -145,7 +145,6 @@ void step() {
 //  }
   
   delayMicroseconds(del);
-  nh.spinOnce();
 }
 
 void setup() {
@@ -164,4 +163,6 @@ void setup() {
 
 void loop() {
   step();
+    nh.spinOnce();
+
 }
